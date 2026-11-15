@@ -2,9 +2,11 @@
   "use strict";
   const $ = (s) => document.querySelector(s);
   const input = $("#json-input"), treeRoot = $("#tree-root"), treeEmpty = $("#tree-empty");
+  const editorWrap = $(".editor-wrap");
   const inputState = $("#input-state"), lineNumbers = $("#line-numbers"), searchInput = $("#search-input");
   const toast = $("#toast");
   let parsedData, formattedText = "", toastTimer;
+  let dragDepth = 0;
 
   const sample = {
     project: { name: "JSON Viewer", version: "1.0.0", description: "A lightweight browser-based JSON explorer", private: true },
@@ -92,6 +94,14 @@
       setState("invalid","Invalid JSON"); status(err.message,true); if(showError) notify(err.message); return false;
     }
   }
+  async function loadFile(file) {
+    try {
+      input.value = await file.text();
+      if (validate(true)) notify(`Loaded ${file.name}`);
+    } catch {
+      notify("Could not read this file");
+    }
+  }
   function copy(text,message) {
     if (!text) return;
     const fallback=()=>{const el=document.createElement("textarea");el.value=text;el.style.position="fixed";el.style.opacity="0";document.body.append(el);el.select();try{document.execCommand("copy");notify(message)}catch{notify("Unable to copy; please copy manually")}el.remove()};
@@ -131,8 +141,26 @@
   $("#clear-btn").addEventListener("click",()=>{input.value="";validate();input.focus()});
   $("#file-input").addEventListener("change",async e=>{
     const file=e.target.files?.[0];if(!file)return;
-    try{input.value=await file.text();validate(true);notify(`Loaded ${file.name}`)}catch{notify("Could not read this file")}
+    await loadFile(file);
     e.target.value="";
+  });
+  editorWrap.addEventListener("dragenter",e=>{
+    if(!e.dataTransfer?.types.includes("Files"))return;
+    e.preventDefault(); dragDepth++; editorWrap.classList.add("drag-over");
+  });
+  editorWrap.addEventListener("dragover",e=>{
+    if(!e.dataTransfer?.types.includes("Files"))return;
+    e.preventDefault(); e.dataTransfer.dropEffect="copy";
+  });
+  editorWrap.addEventListener("dragleave",e=>{
+    if(!e.dataTransfer?.types.includes("Files"))return;
+    e.preventDefault(); dragDepth=Math.max(0,dragDepth-1);
+    if(!dragDepth)editorWrap.classList.remove("drag-over");
+  });
+  editorWrap.addEventListener("drop",async e=>{
+    if(!e.dataTransfer?.files.length)return;
+    e.preventDefault(); dragDepth=0; editorWrap.classList.remove("drag-over");
+    await loadFile(e.dataTransfer.files[0]);
   });
   $("#copy-json-btn").addEventListener("click",()=>{if(parsedData!==undefined)copy(JSON.stringify(parsedData,null,2),"JSON copied to clipboard")});
   $("#expand-btn").addEventListener("click",()=>expandAll(true));

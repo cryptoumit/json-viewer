@@ -333,6 +333,12 @@ h1 span {
   background: #080d1929;
 }
 
+.editor-wrap.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+  background: #8b7cff12;
+}
+
 .line-numbers {
   width: 43px;
   flex: none;
@@ -542,6 +548,10 @@ kbd {
   text-align: center;
 }
 
+.empty-state[hidden] {
+  display: none;
+}
+
 .empty-graphic {
   position: relative;
   width: 90px;
@@ -636,58 +646,53 @@ kbd {
   opacity: 1;
 }
 
-.app-shell {
-  padding: 0 22px 24px;
-}
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 0 13px 20px;
+  }
 
-.workspace {
-  grid-template-columns: 1fr;
-}
+  .workspace {
+    grid-template-columns: 1fr;
+  }
 
-.panel {
-  height: 540px;
-}
+  .panel {
+    height: 510px;
+  }
 
-main {
-  padding-top: 38px;
-}
+  main {
+    padding-top: 38px;
+  }
 
-.app-shell {
-  padding: 0 13px 20px;
-}
+  .topbar {
+    height: 62px;
+  }
 
-.topbar {
-  height: 62px;
-}
+  .topbar-right {
+    gap: 12px;
+  }
 
-.topbar-right {
-  gap: 12px;
-}
+  .privacy-note {
+    font-size: 0;
+  }
 
-.privacy-note {
-  font-size: 0;
-}
+  .intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
 
-.intro {
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 15px;
-}
+  h1 {
+    font-size: 36px;
+  }
 
-h1 {
-  font-size: 36px;
-}
+  .panel-heading,
+  .panel-footer {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
 
-.panel {
-  height: 510px;
-}
-
-.panel-heading,.panel-footer {
-  padding-left: 13px;
-  padding-right: 13px;
-}
-
-.page-footer {
-  gap: 12px;
-  flex-direction: column;
+  .page-footer {
+    gap: 12px;
+    flex-direction: column;
+  }
 }
