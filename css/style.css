@@ -243,6 +243,18 @@ h1 span {
   border-color: #6257bd;
 }
 
+.tree-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tree-action-button {
+  width: auto;
+  padding: 0 9px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
 .upload-button {
   position: relative;
   display: inline-flex;

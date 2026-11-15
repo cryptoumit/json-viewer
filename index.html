@@ -15,9 +15,9 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="./">
+        <div class="brand">
           <span class="brand-mark">{ }</span>JSON<span class="brand-muted">Viewer</span>
-        </a>
+        </div>
 
         <div class="topbar-right">
           <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false" title="Switch to light mode">☼</button>
@@ -71,8 +71,7 @@
                 autocomplete="off"
                 autocorrect="off"
                 aria-label="JSON input"
-                placeholder='Paste your JSON here…&#10;&#10;{&#10;  "hello": "world",&#10;  "items": [1, 2, 3]&#10;}'>
-              </textarea>
+                placeholder='Paste your JSON here…&#10;&#10;{&#10;  "hello": "world",&#10;  "items": [1, 2, 3]&#10;}'></textarea>
             </div>
 
             <div class="panel-footer">
@@ -94,9 +93,9 @@
                 </div>
               </div>
 
-              <div>
-                <button id="expand-btn" class="icon-button" title="Expand all">⊞</button>
-                <button id="collapse-btn" class="icon-button" title="Collapse all">⊟</button>
+              <div class="tree-actions">
+                <button id="expand-btn" class="icon-button tree-action-button" type="button" title="Expand all" disabled>Expand all</button>
+                <button id="collapse-btn" class="icon-button tree-action-button" type="button" title="Collapse all" disabled>Collapse all</button>
               </div>
             </div>
 

@@ -45,6 +45,12 @@
   }
   function typeOf(v) { return v===null?"null":Array.isArray(v)?"array":typeof v; }
 
+  function updateTreeControls() {
+    const enabled = treeRoot.querySelector(".tree-children .tree-children > .tree-node") !== null;
+    $("#expand-btn").disabled = !enabled;
+    $("#collapse-btn").disabled = !enabled;
+  }
+
   function makeNode(value, key, root=false) {
     const type = typeOf(value), container = type==="object" || type==="array";
     const node = document.createElement("div"); node.className = "tree-node";
@@ -82,6 +88,7 @@
 
   function render(data) {
     treeRoot.replaceChildren(makeNode(data,null,true)); treeRoot.hidden=false; treeEmpty.hidden=true;
+    updateTreeControls();
     searchInput.disabled=false; $("#copy-json-btn").disabled=false; searchInput.value="";
     const t=typeOf(data), count=(t==="object"||t==="array")?Object.keys(data).length:1;
     $("#tree-meta").textContent=`${t} · ${count} top-level ${count===1?"item":"items"}`;
@@ -91,6 +98,7 @@
     updateLines(); const raw=input.value.trim();
     if (!raw) {
       parsedData=undefined; formattedText=""; treeRoot.replaceChildren(); treeRoot.hidden=true; treeEmpty.hidden=false;
+      updateTreeControls();
       searchInput.disabled=true; $("#copy-json-btn").disabled=true; $("#tree-meta").textContent="No data loaded";
       setState("neutral","Waiting for input"); status("Ready when you are"); return false;
     }
@@ -99,6 +107,7 @@
       setState("valid","Valid JSON"); render(parsedData); status("JSON validated successfully"); return true;
     } catch(err) {
       parsedData=undefined; treeRoot.replaceChildren(); treeRoot.hidden=true; treeEmpty.hidden=false;
+      updateTreeControls();
       searchInput.disabled=true; $("#copy-json-btn").disabled=true; $("#tree-meta").textContent="Invalid JSON";
       setState("invalid","Invalid JSON"); status(err.message,true); if(showError) notify(err.message); return false;
     }
@@ -180,5 +189,5 @@
     if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"){e.preventDefault();$("#format-btn").click()}
   });
-  updateLines();
+  updateLines(); validate();
 })();
