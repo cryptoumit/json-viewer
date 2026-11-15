@@ -1,0 +1,20 @@
+{
+  "project": {
+    "name": "JSON Viewer",
+    "version": "1.0.0",
+    "description": "A lightweight browser-based JSON explorer",
+    "private": true
+  },
+  "features": [
+    "Validation",
+    "Formatting",
+    "Tree navigation",
+    "Search"
+  ],
+  "metrics": {
+    "users": 1284,
+    "uptime": 99.95,
+    "beta": false,
+    "lastUpdated": null
+  }
+}

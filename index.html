@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A private, browser-based JSON viewer."><meta name="theme-color" content="#0b1020">
+<title>JSON Viewer</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css"><script src="js/app.js" defer></script>
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark">{ }</span>JSON<span class="brand-muted">Viewer</span></a><div class="topbar-right"><span class="privacy-note"><i></i> Processed locally</span><a href="https://github.com/" target="_blank" rel="noreferrer">GitHub ↗</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">DEVELOPER TOOL</p><h1>Make JSON <span>readable.</span></h1><p class="subtitle">Format, validate and explore JSON without sending your data anywhere.</p></div><div class="intro-badge">✦ Simple. Fast. Private.</div></section>
+<section class="workspace">
+<article class="panel">
+<div class="panel-heading"><div class="panel-title"><span class="panel-icon">{ }</span><div><h2>Input</h2><p>Paste or edit your JSON</p></div></div><label class="icon-button upload-button" title="Upload JSON">↑<input id="file-input" type="file" accept=".json,application/json,text/plain"></label></div>
+<div class="editor-toolbar"><span id="input-state" class="state-pill neutral"><i></i> Waiting for input</span><div><button id="sample-btn" class="text-button">Load sample</button><button id="clear-btn" class="text-button">Clear</button></div></div>
+<div class="editor-wrap"><div id="line-numbers" class="line-numbers">1</div><textarea id="json-input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="JSON input" placeholder='Paste your JSON here…&#10;&#10;{&#10;  "hello": "world",&#10;  "items": [1, 2, 3]&#10;}'></textarea></div>
+<div class="panel-footer"><span id="input-meta">0 lines · 0 characters</span><div class="footer-actions"><button id="format-btn" class="button button-secondary">Format</button><button id="minify-btn" class="button button-primary">Minify</button></div></div>
+</article>
+<article class="panel">
+<div class="panel-heading"><div class="panel-title"><span class="panel-icon">⌘</span><div><h2>Explorer</h2><p>Navigate the JSON structure</p></div></div><div><button id="expand-btn" class="icon-button" title="Expand all">⊞</button><button id="collapse-btn" class="icon-button" title="Collapse all">⊟</button></div></div>
+<div class="search-wrap"><span>⌕</span><input id="search-input" type="search" placeholder="Search keys and values…" disabled aria-label="Search JSON tree"><kbd>/</kbd></div>
+<div id="tree-empty" class="empty-state"><div class="empty-graphic">{ }<i>⌕</i></div><h3>Your JSON will appear here</h3><p>Paste valid JSON in the editor, or load the sample to explore the tree.</p></div>
+<div id="tree-root" class="tree-root" role="tree" aria-label="JSON tree" hidden></div>
+<div class="panel-footer"><span id="tree-meta">No data loaded</span><button id="copy-json-btn" class="text-button" disabled>Copy JSON</button></div>
+</article>
+</section>
+<section class="statusbar" aria-live="polite"><div id="status-message"><i>●</i> Ready when you are</div><div class="status-right"><span>UTF-8</span><span>JSON</span><span>100%</span></div></section>
+</main>
+<footer class="page-footer"><span>Built for curious developers.</span><span>Your data stays in your browser ▣</span></footer>
+</div><div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body></html>
