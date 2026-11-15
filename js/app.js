@@ -4,7 +4,7 @@
   const input = $("#json-input"), treeRoot = $("#tree-root"), treeEmpty = $("#tree-empty");
   const editorWrap = $(".editor-wrap");
   const inputState = $("#input-state"), lineNumbers = $("#line-numbers"), searchInput = $("#search-input");
-  const toast = $("#toast");
+  const toast = $("#toast"), themeToggle = $("#theme-toggle");
   let parsedData, formattedText = "", toastTimer;
   let dragDepth = 0;
 
@@ -33,6 +33,15 @@
   }
   function status(message, error=false) {
     $("#status-message").innerHTML = `<i style="color:${error?"var(--red)":"var(--green)"}">●</i>${escapeHtml(message)}`;
+  }
+  function setTheme(theme) {
+    const isLight = theme === "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    themeToggle.textContent = isLight ? "☾" : "☼";
+    themeToggle.setAttribute("aria-label", `Switch to ${isLight ? "dark" : "light"} mode`);
+    themeToggle.setAttribute("aria-pressed", String(isLight));
+    themeToggle.title = `Switch to ${isLight ? "dark" : "light"} mode`;
+    $('meta[name="theme-color"]').content = isLight ? "#f3f5fa" : "#0b1020";
   }
   function typeOf(v) { return v===null?"null":Array.isArray(v)?"array":typeof v; }
 
@@ -133,6 +142,7 @@
   }
 
   input.addEventListener("input",()=>validate());
+  themeToggle.addEventListener("click",()=>setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
   input.addEventListener("scroll",()=>{lineNumbers.scrollTop=input.scrollTop});
   input.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();input.setRangeText("  ",input.selectionStart,input.selectionEnd,"end");validate()}});
   $("#format-btn").addEventListener("click",()=>{if(validate()){input.value=formattedText;validate();notify("JSON formatted")}});

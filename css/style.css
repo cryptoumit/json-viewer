@@ -92,6 +92,24 @@ button:disabled {
   text-decoration: none;
 }
 
+.theme-toggle {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #c6cde0;
+  background: #151e32;
+  font-size: 17px;
+}
+
+.theme-toggle:hover {
+  border-color: #6257bd;
+  color: white;
+}
+
 .privacy-note {
   display: flex;
   align-items: center;
@@ -644,6 +662,195 @@ kbd {
 .toast.show {
   transform: translate(-50%,0);
   opacity: 1;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5fa;
+  --panel: #ffffff;
+  --border: #d7deeb;
+  --soft: #e8ecf3;
+  --text: #20283a;
+  --muted: #657189;
+  --accent: #6758e8;
+  --green: #16875f;
+  --red: #d64158;
+  --shadow: 0 18px 45px #26334d1a;
+}
+
+:root[data-theme="light"] body {
+  background: radial-gradient(ellipse at 15% -10%,#6a5bff12,transparent 38%),var(--bg);
+}
+
+:root[data-theme="light"] .topbar {
+  border-color: #66708530;
+}
+
+:root[data-theme="light"] .brand-muted,
+:root[data-theme="light"] .topbar-right a {
+  color: #566178;
+}
+
+:root[data-theme="light"] .theme-toggle,
+:root[data-theme="light"] .icon-button,
+:root[data-theme="light"] .upload-button {
+  color: #4b5670;
+  background: #f7f8fc;
+}
+
+:root[data-theme="light"] .theme-toggle:hover,
+:root[data-theme="light"] .icon-button:hover,
+:root[data-theme="light"] .upload-button:hover {
+  color: #342b8e;
+  border-color: #8276ed;
+}
+
+:root[data-theme="light"] .intro-badge {
+  color: #536078;
+}
+
+:root[data-theme="light"] .panel {
+  background: linear-gradient(#fff,#fdfdff);
+}
+
+:root[data-theme="light"] .panel-icon {
+  color: #594bc5;
+  background: #6d5df018;
+}
+
+:root[data-theme="light"] .editor-toolbar {
+  border-color: #d7deebaa;
+}
+
+:root[data-theme="light"] .state-pill.neutral {
+  color: #58657d;
+  background: #66708514;
+}
+
+:root[data-theme="light"] .text-button {
+  color: #59667e;
+}
+
+:root[data-theme="light"] .text-button:hover:not(:disabled) {
+  color: #29234f;
+}
+
+:root[data-theme="light"] .editor-wrap {
+  background: #f8f9fc;
+}
+
+:root[data-theme="light"] .editor-wrap.drag-over {
+  background: #6758e812;
+}
+
+:root[data-theme="light"] .line-numbers {
+  color: #8792a7;
+  border-color: #d7deeb;
+}
+
+:root[data-theme="light"] #json-input {
+  color: #273149;
+}
+
+:root[data-theme="light"] #json-input::placeholder {
+  color: #8792a7;
+}
+
+:root[data-theme="light"] .panel-footer {
+  color: #66738a;
+}
+
+:root[data-theme="light"] .button-secondary {
+  color: #45516a;
+  background: #f0f2f8;
+  border-color: #d5dbea;
+}
+
+:root[data-theme="light"] .search-wrap {
+  color: #66738a;
+  background: #f7f8fc;
+  border-color: #d7deeb;
+}
+
+:root[data-theme="light"] .search-wrap input::placeholder {
+  color: #8792a7;
+}
+
+:root[data-theme="light"] kbd {
+  color: #657189;
+  border-color: #cbd3e1;
+}
+
+:root[data-theme="light"] .tree-row:hover {
+  background: #6758e80c;
+}
+
+:root[data-theme="light"] .tree-toggle {
+  color: #66738a;
+}
+
+:root[data-theme="light"] .tree-key {
+  color: #48556e;
+}
+
+:root[data-theme="light"] .tree-colon,
+:root[data-theme="light"] .node-meta {
+  color: #77839a;
+}
+
+:root[data-theme="light"] .type-string {
+  color: #28743a;
+}
+
+:root[data-theme="light"] .type-number {
+  color: #9a5a08;
+}
+
+:root[data-theme="light"] .type-boolean {
+  color: #6841b8;
+}
+
+:root[data-theme="light"] .type-null {
+  color: #68758a;
+}
+
+:root[data-theme="light"] .type-bracket {
+  color: #59677f;
+}
+
+:root[data-theme="light"] .tree-children {
+  border-color: #d7deeb;
+}
+
+:root[data-theme="light"] .empty-graphic {
+  color: #594bc5;
+  background: #6d5df00c;
+  border-color: #d7deeb;
+}
+
+:root[data-theme="light"] .empty-graphic i {
+  color: #594bc5;
+  background: #f0f2fa;
+  border-color: #d0d7e5;
+}
+
+:root[data-theme="light"] .empty-state p {
+  color: #66738a;
+}
+
+:root[data-theme="light"] .statusbar {
+  color: #66738a;
+}
+
+:root[data-theme="light"] .page-footer {
+  color: #66738a;
+  border-color: #66708530;
+}
+
+:root[data-theme="light"] .toast {
+  color: #273149;
+  background: #fff;
+  border-color: #cbd3e1;
 }
 
 @media (max-width: 760px) {
