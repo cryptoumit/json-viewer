@@ -116,7 +116,11 @@
   async function loadFile(file) {
     try {
       input.value = await file.text();
-      if (validate(true)) notify(`Loaded ${file.name}`);
+      if (validate(true)) {
+        input.value = formattedText;
+        updateLines();
+        notify(`Loaded ${file.name}`);
+      }
     } catch {
       notify("Could not read this file");
     }
@@ -250,6 +254,10 @@
     });
   });
   document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"&&document.activeElement===searchInput){e.preventDefault();searchInput.value="";search();input.focus();return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"&&!searchInput.disabled){e.preventDefault();searchInput.focus();searchInput.select();return}
+    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyF"){e.preventDefault();$("#format-btn").click();return}
+    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyJ"){e.preventDefault();$("#minify-btn").click();return}
     if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"){e.preventDefault();$("#format-btn").click()}
   });
