@@ -6,8 +6,16 @@
   const inputState = $("#input-state"), lineNumbers = $("#line-numbers"), searchInput = $("#search-input");
   const toast = $("#toast"), themeToggle = $("#theme-toggle");
   const timestampInput = $("#timestamp-input"), dateInput = $("#date-input");
+  const jsonViewTab = $("#json-view-tab"), apiViewTab = $("#api-view-tab");
+  const jsonViewPanel = $("#json-view-panel"), apiViewPanel = $("#api-view-panel");
+  const apiForm = $("#api-form"), apiMethod = $("#api-method"), apiUrl = $("#api-url");
+  const apiHeaders = $("#api-headers"), apiBody = $("#api-body");
+  const apiSend = $("#api-send"), apiCancel = $("#api-cancel");
+  const MAX_API_RESPONSE_BYTES = 5 * 1024 * 1024;
+  const API_REQUEST_TIMEOUT_MS = 30_000;
   let parsedData, formattedText = "", toastTimer;
   let dragDepth = 0;
+  let apiController = null, apiTimedOut = false;
 
   const sample = {
     project: { name: "JSON Viewer", version: "1.0.0", description: "A lightweight browser-based JSON explorer", private: true },
@@ -130,6 +138,284 @@
     const fallback=()=>{const el=document.createElement("textarea");el.value=text;el.style.position="fixed";el.style.opacity="0";document.body.append(el);el.select();try{document.execCommand("copy");notify(message)}catch{notify("Unable to copy; please copy manually")}el.remove()};
     if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(text).then(()=>notify(message)).catch(fallback); else fallback();
   }
+  function setApiMessage(message, type="info") {
+    const element = $("#api-message");
+    element.textContent = message;
+    element.className = `api-message ${type}`;
+    element.hidden = !message;
+  }
+  function clearApiResponse() {
+    $("#api-empty").hidden = false;
+    $("#api-response-meta").hidden = true;
+    $("#api-response-headers-section").hidden = true;
+    $("#api-response-body").hidden = true;
+    $("#api-response-body").textContent = "";
+    $("#api-open-json").hidden = true;
+    $("#api-response-headers").replaceChildren();
+    $("#api-response-status").textContent = "—";
+    $("#api-response-time").textContent = "—";
+    $("#api-response-type").textContent = "—";
+    $("#api-response-size").textContent = "—";
+    setApiMessage("");
+  }
+  function setApiLoading(loading) {
+    apiSend.disabled = loading;
+    apiCancel.disabled = !loading;
+    $("#api-loading").hidden = !loading;
+  }
+  function activateView(view) {
+    const showApi = view === "api";
+    jsonViewTab.classList.toggle("active", !showApi);
+    apiViewTab.classList.toggle("active", showApi);
+    jsonViewTab.setAttribute("aria-selected", String(!showApi));
+    apiViewTab.setAttribute("aria-selected", String(showApi));
+    jsonViewTab.tabIndex = showApi ? -1 : 0;
+    apiViewTab.tabIndex = showApi ? 0 : -1;
+    jsonViewPanel.hidden = showApi;
+    apiViewPanel.hidden = !showApi;
+  }
+  function formatBytes(size) {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  function renderApiMetadata(response, duration=null, responseSize=null) {
+    $("#api-empty").hidden = true;
+    $("#api-response-meta").hidden = false;
+    $("#api-response-status").textContent = `${response.status}${response.statusText ? ` ${response.statusText}` : ""}`;
+    $("#api-response-time").textContent = duration === null ? "Receiving body…" : `${duration} ms`;
+    $("#api-response-type").textContent = response.headers.get("content-type") || "Not provided";
+    $("#api-response-size").textContent = responseSize === null ? "Measuring…" : `${formatBytes(responseSize)} (${responseSize.toLocaleString()} bytes)`;
+
+    const list = $("#api-response-headers");
+    list.replaceChildren();
+    for (const [name, value] of response.headers.entries()) {
+      const key = document.createElement("dt"), content = document.createElement("dd");
+      key.textContent = name;
+      content.textContent = value;
+      list.append(key, content);
+    }
+    $("#api-response-headers-section").hidden = false;
+  }
+  function readRequestHeaders(raw) {
+    const headers = new Headers();
+    const forbidden = /^(cookie|cookie2|host|content-length|origin|referer|connection|transfer-encoding)$/i;
+    raw.split(/\r?\n/).forEach((line, index) => {
+      if (!line.trim()) return;
+      const separator = line.indexOf(":");
+      if (separator <= 0) throw new Error(`Invalid request header on line ${index + 1}. Use Name: value.`);
+      const name = line.slice(0, separator).trim();
+      const value = line.slice(separator + 1).trim();
+      if (forbidden.test(name)) throw new Error(`The browser controls the "${name}" header; it cannot be set here.`);
+      headers.append(name, value);
+    });
+    return headers;
+  }
+  function responseSizeError() {
+    const error = new Error("Response exceeds the configured size limit.");
+    error.name = "ResponseSizeLimitError";
+    return error;
+  }
+  async function readApiResponse(response) {
+    // Enforce the limit from the stream too because Content-Length can be missing or inaccurate.
+    const length = response.headers.get("content-length");
+    if (length && /^\d+$/.test(length) && Number(length) > MAX_API_RESPONSE_BYTES) {
+      await response.body?.cancel();
+      throw responseSizeError();
+    }
+    if (!response.body) return { text: "", size: 0 };
+
+    const reader = response.body.getReader(), chunks = [];
+    let size = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > MAX_API_RESPONSE_BYTES) {
+          await reader.cancel();
+          throw responseSizeError();
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    chunks.forEach(chunk => { bytes.set(chunk, offset); offset += chunk.byteLength; });
+    return { text: new TextDecoder().decode(bytes), size };
+  }
+  function httpErrorMessage(response) {
+    if (response.ok) return "";
+    const descriptions = {
+      400: "The server rejected the request.",
+      401: "Authentication is required or was rejected.",
+      403: "The server refused access to this resource.",
+      404: "The requested resource was not found.",
+      429: "The server is rate limiting requests; try again later.",
+      500: "The server encountered an internal error."
+    };
+    const status = `${response.status}${response.statusText ? ` ${response.statusText}` : ""}`;
+    return `HTTP ${status}. ${descriptions[response.status] || "The server returned an unsuccessful status."}`;
+  }
+  async function sendApiRequest(event) {
+    event.preventDefault();
+    if (apiController) return;
+    clearApiResponse();
+    $("#api-empty").hidden = true;
+
+    let url;
+    try {
+      url = new URL(apiUrl.value.trim());
+      if (!["http:", "https:"].includes(url.protocol)) throw new Error("Only HTTP and HTTPS endpoint URLs are supported.");
+      if (url.username || url.password) throw new Error("Do not put credentials in the URL; use a request header instead.");
+      const credentialParameter = /token|api[_-]?key|authorization|password|passwd|secret|credential|(?:^|[_-])auth(?:$|[_-])|(?:^|[_-])key(?:$|[_-])/i;
+      if ([...url.searchParams.keys()].some(key => credentialParameter.test(key))) {
+        throw new Error("Do not put credentials in URL query parameters; use a request header instead.");
+      }
+    } catch (error) {
+      setApiMessage(error.message || "Enter a valid absolute HTTP or HTTPS URL.", "error");
+      return;
+    }
+
+    const method = apiMethod.value;
+    let headers;
+    try {
+      headers = readRequestHeaders(apiHeaders.value);
+    } catch (error) {
+      setApiMessage(error.message, "error");
+      return;
+    }
+
+    let body;
+    if (method !== "GET" && apiBody.value.trim()) {
+      try {
+        JSON.parse(apiBody.value);
+      } catch {
+        setApiMessage("Request body must contain valid JSON.", "error");
+        return;
+      }
+      body = apiBody.value;
+      if (!headers.has("content-type")) headers.set("Content-Type", "application/json");
+    }
+
+    const hasSensitiveHeader = [...headers.keys()].some(name => /authorization|(?:^|[-_])auth(?:$|[-_])|cookie|token|api[-_]?key|secret|password|credential/i.test(name));
+    if (url.protocol === "http:" && (hasSensitiveHeader || body) &&
+      !window.confirm("This endpoint uses unencrypted HTTP. Credentials or request data may be visible to others. Send anyway?")) {
+      setApiMessage("Request was not sent.", "error");
+      return;
+    }
+
+    const controller = new AbortController();
+    apiController = controller;
+    apiTimedOut = false;
+    setApiLoading(true);
+    const started = performance.now();
+    const timeout = setTimeout(() => {
+      if (apiController === controller) {
+        apiTimedOut = true;
+        controller.abort();
+      }
+    }, API_REQUEST_TIMEOUT_MS);
+
+    let response;
+    try {
+      response = await fetch(url.href, {
+        method,
+        headers,
+        body,
+        signal: controller.signal,
+        credentials: "omit",
+        cache: "no-store",
+        referrerPolicy: "no-referrer"
+      });
+      if (apiController !== controller) return;
+      renderApiMetadata(response);
+      const { text, size } = await readApiResponse(response);
+      if (apiController !== controller) return;
+      const duration = Math.round(performance.now() - started);
+      renderApiMetadata(response, duration, size);
+
+      const contentType = response.headers.get("content-type") || "";
+      const trimmed = text.trim();
+      let data, validJson = false;
+      if (trimmed) {
+        try {
+          data = JSON.parse(text);
+          validJson = true;
+        } catch {
+          validJson = false;
+        }
+      }
+
+      const httpMessage = httpErrorMessage(response);
+      const messageType = response.ok ? "success" : "error";
+      if (validJson) {
+        input.value = JSON.stringify(data, null, 2);
+        validate();
+        $("#api-response-body").hidden = true;
+        $("#api-open-json").hidden = false;
+        setApiMessage([httpMessage, "Valid JSON loaded into the existing JSON Viewer."].filter(Boolean).join(" "), messageType);
+      } else {
+        $("#api-open-json").hidden = true;
+        $("#api-response-body").textContent = text;
+        $("#api-response-body").hidden = !trimmed;
+        const looksLikeJson = /^(?:\{|\[|")/.test(trimmed);
+        const invalidJson = /\bjson\b|\+json\b/i.test(contentType) || looksLikeJson;
+        let bodyMessage;
+        if (!trimmed) bodyMessage = "The response body is empty.";
+        else if (invalidJson) {
+          bodyMessage = "The response appears to be JSON but is invalid. It is shown as text; the existing JSON Viewer was not changed.";
+        } else {
+          bodyMessage = "Response shown as plain text. HTML and scripts are not executed.";
+        }
+        setApiMessage([httpMessage, bodyMessage].filter(Boolean).join(" "), response.ok ? (invalidJson ? "error" : "info") : "error");
+      }
+    } catch (error) {
+      if (apiController !== controller) return;
+      if (response) renderApiMetadata(response, Math.round(performance.now() - started));
+      if (error.name === "ResponseSizeLimitError") {
+        if (response) {
+          const length = Number(response.headers.get("content-length"));
+          $("#api-response-size").textContent = Number.isFinite(length) && length > 0
+            ? `${formatBytes(length)} (declared; body not downloaded)`
+            : `More than ${formatBytes(MAX_API_RESPONSE_BYTES)} (limit exceeded)`;
+        }
+        setApiMessage("Response exceeded the 5 MiB limit and was cancelled.", "error");
+      } else if (apiTimedOut) {
+        setApiMessage("Request timed out after 30 seconds.", "error");
+      } else if (controller.signal.aborted) {
+        setApiMessage("Request cancelled.", "error");
+      } else if (error instanceof TypeError) {
+        setApiMessage("Network or CORS error. Check the URL, connection, and whether the API allows browser cross-origin requests. Browser CORS restrictions cannot be bypassed by this app.", "error");
+      } else {
+        setApiMessage(`Request failed: ${error.message}`, "error");
+      }
+    } finally {
+      clearTimeout(timeout);
+      if (apiController === controller) {
+        apiController = null;
+        setApiLoading(false);
+      }
+    }
+  }
+  function clearApiRequest() {
+    const controller = apiController;
+    apiController = null;
+    if (controller) controller.abort();
+    apiForm.reset();
+    updateApiBodyAvailability();
+    clearApiResponse();
+    setApiLoading(false);
+  }
+  function updateApiBodyAvailability() {
+    const canSendBody = apiMethod.value !== "GET";
+    apiBody.disabled = !canSendBody;
+    $("#api-body-hint").textContent = canSendBody
+      ? "Optional JSON body. It will be sent with an application/json content type."
+      : "GET requests do not send a request body.";
+  }
   function setTimestampResults(date) {
     const valid = date && Number.isFinite(date.getTime());
     const values = valid ? { "timestamp-utc": date.toUTCString() } : {};
@@ -244,6 +530,19 @@
   $("#copy-json-btn").addEventListener("click",()=>{if(parsedData!==undefined)copy(JSON.stringify(parsedData,null,2),"JSON copied to clipboard")});
   $("#expand-btn").addEventListener("click",()=>expandAll(true));
   $("#collapse-btn").addEventListener("click",()=>expandAll(false));
+  jsonViewTab.addEventListener("click",()=>activateView("json"));
+  apiViewTab.addEventListener("click",()=>activateView("api"));
+  [jsonViewTab,apiViewTab].forEach(tab=>tab.addEventListener("keydown",e=>{
+    if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+    e.preventDefault();
+    const next=e.key==="ArrowRight"?apiViewTab:jsonViewTab;
+    activateView(next===apiViewTab?"api":"json");next.focus();
+  }));
+  apiForm.addEventListener("submit",sendApiRequest);
+  apiMethod.addEventListener("change",updateApiBodyAvailability);
+  apiCancel.addEventListener("click",()=>apiController?.abort());
+  $("#api-clear").addEventListener("click",clearApiRequest);
+  $("#api-open-json").addEventListener("click",()=>{activateView("json");input.focus()});
   searchInput.addEventListener("input",search);
   timestampInput.addEventListener("input",updateFromTimestamp);
   dateInput.addEventListener("input",updateFromDate);
@@ -255,11 +554,11 @@
   });
   document.addEventListener("keydown",e=>{
     if(e.key==="Escape"&&document.activeElement===searchInput){e.preventDefault();searchInput.value="";search();input.focus();return}
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"&&!searchInput.disabled){e.preventDefault();searchInput.focus();searchInput.select();return}
-    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyF"){e.preventDefault();$("#format-btn").click();return}
-    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyJ"){e.preventDefault();$("#minify-btn").click();return}
-    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"){e.preventDefault();$("#format-btn").click()}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"&&!jsonViewPanel.hidden&&!searchInput.disabled){e.preventDefault();searchInput.focus();searchInput.select();return}
+    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyF"&&!jsonViewPanel.hidden){e.preventDefault();$("#format-btn").click();return}
+    if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyJ"&&!jsonViewPanel.hidden){e.preventDefault();$("#minify-btn").click();return}
+    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!jsonViewPanel.hidden&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"&&!jsonViewPanel.hidden){e.preventDefault();$("#format-btn").click()}
   });
-  updateLines(); validate();
+  updateApiBodyAvailability(); setApiLoading(false); updateLines(); validate();
 })();
