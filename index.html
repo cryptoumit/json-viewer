@@ -36,7 +36,12 @@
           <div class="intro-badge">✦ Simple. Fast. Private.</div>
         </section>
 
-        <section class="workspace">
+        <div class="view-tabs" role="tablist" aria-label="Viewer">
+          <button id="json-view-tab" class="view-tab active" type="button" role="tab" aria-selected="true" aria-controls="json-view-panel">JSON Viewer</button>
+          <button id="api-view-tab" class="view-tab" type="button" role="tab" aria-selected="false" aria-controls="api-view-panel" tabindex="-1">API Viewer</button>
+        </div>
+
+        <section id="json-view-panel" class="workspace" role="tabpanel" aria-labelledby="json-view-tab">
           <article class="panel">
             <div class="panel-heading">
               <div class="panel-title">
@@ -83,7 +88,7 @@
             </div>
           </article>
 
-          <article class="panel">
+          <article id="explorer-panel" class="panel">
             <div class="panel-heading">
               <div class="panel-title">
                 <span class="panel-icon">⌘</span>
@@ -116,6 +121,86 @@
             <div class="panel-footer">
               <span id="tree-meta">No data loaded</span>
               <button id="copy-json-btn" class="text-button" disabled>Copy JSON</button>
+            </div>
+          </article>
+        </section>
+
+        <section id="api-view-panel" class="api-layout" role="tabpanel" aria-labelledby="api-view-tab" hidden>
+          <article class="panel api-panel">
+            <div class="panel-heading">
+              <div class="panel-title">
+                <span class="panel-icon">↗</span>
+                <div>
+                  <h2>Request</h2>
+                  <p>Send a request directly from your browser</p>
+                </div>
+              </div>
+            </div>
+
+            <form id="api-form" class="api-form" novalidate>
+              <div class="api-url-row">
+                <label class="api-method-field" for="api-method">Method
+                  <select id="api-method">
+                    <option>GET</option>
+                    <option>POST</option>
+                    <option>PUT</option>
+                    <option>PATCH</option>
+                    <option>DELETE</option>
+                  </select>
+                </label>
+                <label class="api-url-field" for="api-url">Endpoint URL
+                  <input id="api-url" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://api.example.com/data">
+                </label>
+              </div>
+
+              <label class="api-field" for="api-headers">Request headers
+                <textarea id="api-headers" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Accept: application/json"></textarea>
+              </label>
+              <p class="api-field-hint">One header per line, in <code>Name: value</code> format. Credentials stay in this page's memory only.</p>
+
+              <label class="api-field" for="api-body">JSON request body
+                <textarea id="api-body" rows="5" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder='{"example": true}' disabled></textarea>
+              </label>
+              <p id="api-body-hint" class="api-field-hint">Choose a method other than GET to send a JSON body.</p>
+
+              <p class="api-security-note">Requests go directly from your browser to the endpoint. The API must allow browser CORS access; CORS restrictions cannot be bypassed here. Browser-only code cannot reliably protect against every private-network destination.</p>
+
+              <div class="api-actions">
+                <button id="api-send" class="button button-primary" type="submit">Send request</button>
+                <button id="api-cancel" class="button button-secondary" type="button" disabled>Cancel</button>
+                <button id="api-clear" class="text-button" type="button">Clear</button>
+                <span id="api-loading" class="api-loading" role="status" hidden><i></i> Sending request…</span>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel api-panel api-response-panel">
+            <div class="panel-heading">
+              <div class="panel-title">
+                <span class="panel-icon">⇣</span>
+                <div>
+                  <h2>Response</h2>
+                  <p>Metadata, JSON Explorer, or safe text preview</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="api-response-content">
+              <p id="api-empty" class="api-empty">Send a request to view its response.</p>
+              <div id="api-response-meta" class="api-response-meta" hidden>
+                <div><span>HTTP status</span><output id="api-response-status">—</output></div>
+                <div><span>Response time</span><output id="api-response-time">—</output></div>
+                <div><span>Content type</span><output id="api-response-type">—</output></div>
+                <div><span>Response size</span><output id="api-response-size">—</output></div>
+              </div>
+              <p id="api-message" class="api-message" role="status" aria-live="polite" hidden></p>
+              <div id="api-explorer-slot" class="api-explorer-slot" hidden></div>
+              <section id="api-response-headers-section" class="api-response-headers" hidden>
+                <h3>Response headers</h3>
+                <dl id="api-response-headers"></dl>
+                <p>Only headers exposed by the API's CORS policy are available in the browser.</p>
+              </section>
+              <pre id="api-response-body" class="api-response-body" hidden></pre>
             </div>
           </article>
         </section>
