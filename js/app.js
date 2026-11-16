@@ -8,6 +8,7 @@
   const timestampInput = $("#timestamp-input"), dateInput = $("#date-input");
   const jsonViewTab = $("#json-view-tab"), apiViewTab = $("#api-view-tab");
   const jsonViewPanel = $("#json-view-panel"), apiViewPanel = $("#api-view-panel");
+  const explorerPanel = $("#explorer-panel"), apiExplorerSlot = $("#api-explorer-slot");
   const apiForm = $("#api-form"), apiMethod = $("#api-method"), apiUrl = $("#api-url");
   const apiHeaders = $("#api-headers"), apiBody = $("#api-body");
   const apiSend = $("#api-send"), apiCancel = $("#api-cancel");
@@ -16,6 +17,7 @@
   let parsedData, formattedText = "", toastTimer;
   let dragDepth = 0;
   let apiController = null, apiTimedOut = false;
+  let apiHasJsonResponse = false;
 
   const sample = {
     project: { name: "JSON Viewer", version: "1.0.0", description: "A lightweight browser-based JSON explorer", private: true },
@@ -150,13 +152,13 @@
     $("#api-response-headers-section").hidden = true;
     $("#api-response-body").hidden = true;
     $("#api-response-body").textContent = "";
-    $("#api-open-json").hidden = true;
     $("#api-response-headers").replaceChildren();
     $("#api-response-status").textContent = "—";
     $("#api-response-time").textContent = "—";
     $("#api-response-type").textContent = "—";
     $("#api-response-size").textContent = "—";
     setApiMessage("");
+    setApiExplorerVisible(false);
   }
   function setApiLoading(loading) {
     apiSend.disabled = loading;
@@ -173,6 +175,26 @@
     apiViewTab.tabIndex = showApi ? 0 : -1;
     jsonViewPanel.hidden = showApi;
     apiViewPanel.hidden = !showApi;
+    if (showApi) {
+      apiExplorerSlot.append(explorerPanel);
+      apiExplorerSlot.hidden = !apiHasJsonResponse;
+      explorerPanel.hidden = !apiHasJsonResponse;
+    } else {
+      jsonViewPanel.append(explorerPanel);
+      apiExplorerSlot.hidden = true;
+      explorerPanel.hidden = false;
+    }
+  }
+  function setApiExplorerVisible(visible) {
+    apiHasJsonResponse = visible;
+    if (!apiViewPanel.hidden) {
+      apiExplorerSlot.hidden = !visible;
+      explorerPanel.hidden = !visible;
+    }
+  }
+  function isExplorerActive() {
+    return !searchInput.disabled &&
+      (!jsonViewPanel.hidden || (apiViewPanel.contains(explorerPanel) && !explorerPanel.hidden));
   }
   function formatBytes(size) {
     if (size < 1024) return `${size} B`;
@@ -352,13 +374,14 @@
       const httpMessage = httpErrorMessage(response);
       const messageType = response.ok ? "success" : "error";
       if (validJson) {
-        input.value = JSON.stringify(data, null, 2);
+        const formattedJson = JSON.stringify(data, null, 2);
+        input.value = formattedJson;
         validate();
         $("#api-response-body").hidden = true;
-        $("#api-open-json").hidden = false;
-        setApiMessage([httpMessage, "Valid JSON loaded into the existing JSON Viewer."].filter(Boolean).join(" "), messageType);
+        setApiExplorerVisible(true);
+        setApiMessage([httpMessage, "Valid JSON loaded into the Explorer and existing JSON editor."].filter(Boolean).join(" "), messageType);
       } else {
-        $("#api-open-json").hidden = true;
+        setApiExplorerVisible(false);
         $("#api-response-body").textContent = text;
         $("#api-response-body").hidden = !trimmed;
         const looksLikeJson = /^(?:\{|\[|")/.test(trimmed);
@@ -542,7 +565,6 @@
   apiMethod.addEventListener("change",updateApiBodyAvailability);
   apiCancel.addEventListener("click",()=>apiController?.abort());
   $("#api-clear").addEventListener("click",clearApiRequest);
-  $("#api-open-json").addEventListener("click",()=>{activateView("json");input.focus()});
   searchInput.addEventListener("input",search);
   timestampInput.addEventListener("input",updateFromTimestamp);
   dateInput.addEventListener("input",updateFromDate);
@@ -553,11 +575,11 @@
     });
   });
   document.addEventListener("keydown",e=>{
-    if(e.key==="Escape"&&document.activeElement===searchInput){e.preventDefault();searchInput.value="";search();input.focus();return}
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"&&!jsonViewPanel.hidden&&!searchInput.disabled){e.preventDefault();searchInput.focus();searchInput.select();return}
+    if(e.key==="Escape"&&document.activeElement===searchInput){e.preventDefault();searchInput.value="";search();(jsonViewPanel.hidden?apiUrl:input).focus();return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"&&isExplorerActive()){e.preventDefault();searchInput.focus();searchInput.select();return}
     if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyF"&&!jsonViewPanel.hidden){e.preventDefault();$("#format-btn").click();return}
     if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyJ"&&!jsonViewPanel.hidden){e.preventDefault();$("#minify-btn").click();return}
-    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!jsonViewPanel.hidden&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
+    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&isExplorerActive()){e.preventDefault();searchInput.focus()}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"&&!jsonViewPanel.hidden){e.preventDefault();$("#format-btn").click()}
   });
   updateApiBodyAvailability(); setApiLoading(false); updateLines(); validate();

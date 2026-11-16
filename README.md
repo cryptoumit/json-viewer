@@ -7,7 +7,7 @@ Download the project as a ZIP from [GitHub](https://github.com/cryptoumit/json-v
 
 ## API Viewer
 
-The API Viewer sends requests directly from your browser and supports GET, POST, PUT, PATCH, and DELETE, with custom headers and an optional JSON body. It shows response status, timing, content type, size, and accessible headers. Valid JSON opens in the existing editor and tree; other response content is shown as text and is never executed.
+The API Viewer sends requests directly from your browser and supports GET, POST, PUT, PATCH, and DELETE, with custom headers and an optional JSON body. It shows response status, timing, content type, size, and accessible headers. Valid JSON appears in the API tab's Explorer tree and also populates the existing editor; other response content is shown as text and is never executed.
 
 No API response is sent through a proxy or stored by the app. Requests require the target API to allow browser cross-origin access (CORS), so some APIs will not work. Browser code cannot bypass CORS. For local use, open the project in VS Code and start `index.html` with the Live Server extension; the API must still allow requests from that origin.
 

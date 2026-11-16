@@ -88,7 +88,7 @@
             </div>
           </article>
 
-          <article class="panel">
+          <article id="explorer-panel" class="panel">
             <div class="panel-heading">
               <div class="panel-title">
                 <span class="panel-icon">⌘</span>
@@ -180,7 +180,7 @@
                 <span class="panel-icon">⇣</span>
                 <div>
                   <h2>Response</h2>
-                  <p>Response details and safe text preview</p>
+                  <p>Metadata, JSON Explorer, or safe text preview</p>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@
                 <div><span>Response size</span><output id="api-response-size">—</output></div>
               </div>
               <p id="api-message" class="api-message" role="status" aria-live="polite" hidden></p>
-              <button id="api-open-json" class="button button-secondary api-open-json" type="button" hidden>Open in JSON Viewer</button>
+              <div id="api-explorer-slot" class="api-explorer-slot" hidden></div>
               <section id="api-response-headers-section" class="api-response-headers" hidden>
                 <h3>Response headers</h3>
                 <dl id="api-response-headers"></dl>
