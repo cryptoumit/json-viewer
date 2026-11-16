@@ -123,6 +123,40 @@
         <section class="statusbar" aria-live="polite">
           <div id="status-message"><i>●</i> Ready when you are</div>
         </section>
+
+        <section class="timestamp-tool" aria-labelledby="timestamp-heading">
+          <div class="timestamp-heading">
+            <div class="panel-title">
+              <span class="panel-icon">◷</span>
+              <div>
+                <h2 id="timestamp-heading">Timestamp Converter</h2>
+                <p>Convert Unix timestamps and dates for logs and transactions</p>
+              </div>
+            </div>
+            <span class="timestamp-detection">Seconds and milliseconds detected automatically</span>
+          </div>
+
+          <div class="timestamp-grid">
+            <div class="timestamp-column">
+              <label for="timestamp-input">Unix timestamp</label>
+              <input id="timestamp-input" class="timestamp-input" type="text" inputmode="decimal" placeholder="e.g. 1735689600" autocomplete="off">
+              <p id="timestamp-detection" class="timestamp-hint" aria-live="polite">Enter a timestamp in seconds or milliseconds.</p>
+
+              <div class="timestamp-results" aria-live="polite">
+                <div class="timestamp-result">
+                  <div><span>UTC</span><output id="timestamp-utc">—</output></div>
+                  <button class="button button-secondary timestamp-copy" type="button" data-copy-target="timestamp-utc" disabled>Copy</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="timestamp-column">
+              <label for="date-input">Date and time</label>
+              <input id="date-input" class="timestamp-input" type="datetime-local" step="0.001">
+              <p class="timestamp-hint">Choose a local date and time to update the timestamp and UTC result.</p>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer class="page-footer">

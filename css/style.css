@@ -644,6 +644,112 @@ kbd {
   gap: 20px;
 }
 
+.timestamp-tool {
+  margin: 18px 0 30px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: linear-gradient(#121a2dfc,#0f1627fc);
+  box-shadow: var(--shadow);
+}
+
+.timestamp-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--soft);
+}
+
+.timestamp-detection {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.timestamp-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 26px;
+  padding-top: 20px;
+}
+
+.timestamp-column {
+  min-width: 0;
+}
+
+.timestamp-column > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.timestamp-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: 0;
+  color: var(--text);
+  background: #0e1628;
+  font: 12px monospace;
+}
+
+.timestamp-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #8b7cff20;
+}
+
+.timestamp-hint {
+  min-height: 16px;
+  margin: 8px 0 14px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.timestamp-results {
+  display: grid;
+  gap: 8px;
+}
+
+.timestamp-result {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid var(--soft);
+  border-radius: 8px;
+  background: #080d191c;
+}
+
+.timestamp-result > div {
+  min-width: 0;
+}
+
+.timestamp-result span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.timestamp-result output {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font: 11px/1.5 monospace;
+}
+
+.timestamp-copy {
+  flex: none;
+  padding: 6px 9px;
+  font-size: 10px;
+}
+
 .page-footer {
   display: flex;
   justify-content: space-between;
@@ -723,6 +829,18 @@ kbd {
 
 :root[data-theme="light"] .panel {
   background: linear-gradient(#fff,#fdfdff);
+}
+
+:root[data-theme="light"] .timestamp-tool {
+  background: linear-gradient(#fff,#fdfdff);
+}
+
+:root[data-theme="light"] .timestamp-input {
+  background: #f7f8fc;
+}
+
+:root[data-theme="light"] .timestamp-result {
+  background: #f7f8fc;
 }
 
 :root[data-theme="light"] .panel-icon {
@@ -872,6 +990,21 @@ kbd {
 
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .timestamp-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .timestamp-tool {
+    padding: 16px 13px;
+  }
+
+  .timestamp-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .panel {

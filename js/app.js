@@ -5,6 +5,7 @@
   const editorWrap = $(".editor-wrap");
   const inputState = $("#input-state"), lineNumbers = $("#line-numbers"), searchInput = $("#search-input");
   const toast = $("#toast"), themeToggle = $("#theme-toggle");
+  const timestampInput = $("#timestamp-input"), dateInput = $("#date-input");
   let parsedData, formattedText = "", toastTimer;
   let dragDepth = 0;
 
@@ -125,6 +126,61 @@
     const fallback=()=>{const el=document.createElement("textarea");el.value=text;el.style.position="fixed";el.style.opacity="0";document.body.append(el);el.select();try{document.execCommand("copy");notify(message)}catch{notify("Unable to copy; please copy manually")}el.remove()};
     if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(text).then(()=>notify(message)).catch(fallback); else fallback();
   }
+  function setTimestampResults(date) {
+    const valid = date && Number.isFinite(date.getTime());
+    const values = valid ? { "timestamp-utc": date.toUTCString() } : {};
+    Object.entries(values).forEach(([id, value]) => { $(`#${id}`).textContent = value; });
+    document.querySelectorAll(".timestamp-copy").forEach(button => {
+      const value = values[button.dataset.copyTarget];
+      button.disabled = !value;
+    });
+    if (!valid) {
+      $("#timestamp-utc").textContent = "—";
+    }
+    return valid;
+  }
+  function updateFromTimestamp() {
+    const raw = timestampInput.value.trim();
+    const detection = $("#timestamp-detection");
+    if (!raw) {
+      detection.textContent = "Enter a timestamp in seconds or milliseconds.";
+      dateInput.value = "";
+      setTimestampResults(null);
+      return;
+    }
+    const timestamp = Number(raw);
+    if (!Number.isFinite(timestamp)) {
+      detection.textContent = "Enter a valid numeric timestamp.";
+      dateInput.value = "";
+      setTimestampResults(null);
+      return;
+    }
+    const isMilliseconds = Math.abs(timestamp) >= 1e11;
+    const milliseconds = isMilliseconds ? timestamp : timestamp * 1000;
+    const date = new Date(milliseconds);
+    if (!Number.isFinite(date.getTime())) {
+      detection.textContent = "Timestamp is outside the supported date range.";
+      dateInput.value = "";
+      setTimestampResults(null);
+      return;
+    }
+    detection.textContent = `Detected ${isMilliseconds ? "milliseconds" : "seconds"}`;
+    const pad = value => String(value).padStart(2, "0");
+    dateInput.value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${String(date.getMilliseconds()).padStart(3, "0")}`;
+    setTimestampResults(date);
+  }
+  function updateFromDate() {
+    if (!dateInput.value) {
+      timestampInput.value = "";
+      $("#timestamp-detection").textContent = "Enter a timestamp in seconds or milliseconds.";
+      setTimestampResults(null);
+      return;
+    }
+    const date = new Date(dateInput.value);
+    if (!setTimestampResults(date)) return;
+    timestampInput.value = String(date.getTime() / 1000);
+    $("#timestamp-detection").textContent = "Date converted to timestamp";
+  }
   function expandAll(expand) {
     treeRoot.querySelectorAll(".tree-children").forEach(el=>{
       el.hidden=!expand; const row=el.previousElementSibling, btn=row?.querySelector(".tree-toggle");
@@ -185,6 +241,14 @@
   $("#expand-btn").addEventListener("click",()=>expandAll(true));
   $("#collapse-btn").addEventListener("click",()=>expandAll(false));
   searchInput.addEventListener("input",search);
+  timestampInput.addEventListener("input",updateFromTimestamp);
+  dateInput.addEventListener("input",updateFromDate);
+  document.querySelectorAll(".timestamp-copy").forEach(button => {
+    button.addEventListener("click", () => {
+      const output = $(`#${button.dataset.copyTarget}`);
+      if (output.textContent !== "—") copy(output.textContent, "Timestamp result copied");
+    });
+  });
   document.addEventListener("keydown",e=>{
     if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&!searchInput.disabled){e.preventDefault();searchInput.focus()}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"){e.preventDefault();$("#format-btn").click()}
