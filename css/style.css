@@ -73,12 +73,6 @@ button:disabled {
   font: 14px monospace;
 }
 
-.brand-muted {
-  color: #9ba6bc;
-  font-weight: 500;
-  margin-left: -9px;
-}
-
 .topbar-right {
   display: flex;
   gap: 24px;
@@ -1097,7 +1091,6 @@ kbd {
   border-color: #66708530;
 }
 
-:root[data-theme="light"] .brand-muted,
 :root[data-theme="light"] .topbar-right a {
   color: #566178;
 }

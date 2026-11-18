@@ -1,9 +1,9 @@
-# json-tree-viewer
-A lightweight, browser-based JSON viewer with validation, formatting, minification, search, interactive tree navigation, a Unix timestamp converter, an API Viewer, and light/dark modes. The timestamp converter detects seconds or milliseconds, displays the corresponding UTC date, and converts local date and time values back to timestamps. Built with vanilla HTML, CSS, and JavaScript, with no dependencies or backend.
+# JSON & API Viewer
+A lightweight, browser-based JSON and API viewer. Explore, format, and validate JSON; send API requests and inspect responses; and convert Unix timestamps. Built with vanilla HTML, CSS, and JavaScript, with no dependencies or backend.
 
 ## Installation
 
-Download the project as a ZIP from [GitHub](https://github.com/cryptoumit/json-viewer) and extract it. Open `index.html` in your browser to start using JSON Viewer.
+Download the project as a ZIP from [GitHub](https://github.com/cryptoumit/json-viewer) and extract it. Open `index.html` in your browser to start using JSON & API Viewer.
 
 ## API Viewer
 
