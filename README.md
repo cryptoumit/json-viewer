@@ -15,10 +15,21 @@ No API response is sent through a proxy or stored by the app. Requests require t
 
 ## Screenshot
 
+### JSON Viewer
+
 <table>
   <tr>
     <td><img src="assets/sample-json.png" alt="JSON Viewer showing a formatted sample in dark mode" width="100%"></td>
     <td><img src="assets/sample-json-light.png" alt="JSON Viewer showing a formatted sample in light mode" width="100%"></td>
+  </tr>
+</table>
+
+### API Viewer
+
+<table>
+  <tr>
+    <td><img src="assets/sample-api.png" alt="API Viewer showing the Blockstream API address response in the Explorer" width="100%"></td>
+    <td><img src="assets/sample-api-light.png" alt="API Viewer showing the Blockstream API address response in the Explorer in light mode" width="100%"></td>
   </tr>
 </table>
 
