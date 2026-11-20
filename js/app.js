@@ -47,12 +47,20 @@
   }
   function setTheme(theme) {
     const isLight = theme === "light";
-    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    const selectedTheme = isLight ? "light" : "dark";
+    document.documentElement.dataset.theme = selectedTheme;
     themeToggle.textContent = isLight ? "☾" : "☼";
     themeToggle.setAttribute("aria-label", `Switch to ${isLight ? "dark" : "light"} mode`);
     themeToggle.setAttribute("aria-pressed", String(isLight));
     themeToggle.title = `Switch to ${isLight ? "dark" : "light"} mode`;
     $('meta[name="theme-color"]').content = isLight ? "#f3f5fa" : "#0b1020";
+    try { localStorage.setItem("json-viewer-theme", selectedTheme); } catch {}
+  }
+  function loadTheme() {
+    try {
+      const savedTheme = localStorage.getItem("json-viewer-theme");
+      if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
+    } catch {}
   }
   function typeOf(v) { return v===null?"null":Array.isArray(v)?"array":typeof v; }
 
@@ -582,5 +590,5 @@
     if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)&&isExplorerActive()){e.preventDefault();searchInput.focus()}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="enter"&&!jsonViewPanel.hidden){e.preventDefault();$("#format-btn").click()}
   });
-  updateApiBodyAvailability(); setApiLoading(false); updateLines(); validate();
+  loadTheme(); updateApiBodyAvailability(); setApiLoading(false); updateLines(); validate();
 })();
