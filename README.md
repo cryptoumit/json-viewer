@@ -1,7 +1,9 @@
 # JSON & API Viewer
 A lightweight, browser-based JSON and API viewer. Explore, format, and validate JSON; send API requests and inspect responses; and convert Unix timestamps. Built with vanilla HTML, CSS, and JavaScript, with no dependencies or backend.
 
-## Installation
+**Try it online:** [cryptoumit.github.io/json-viewer](https://cryptoumit.github.io/json-viewer/) or install locally
+
+## Local Installation
 
 Download the project as a ZIP from [GitHub](https://github.com/cryptoumit/json-viewer) and extract it. Open `index.html` in your browser to start using JSON & API Viewer.
 
