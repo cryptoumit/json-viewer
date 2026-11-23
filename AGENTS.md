@@ -4,7 +4,7 @@
 
 - This is a small, static JSON and API viewer built with vanilla HTML, CSS, and JavaScript.
 - `index.html` contains the page structure, `css/style.css` contains presentation, and `js/app.js` contains application behavior.
-- The app has no build step, package manager, dependencies, server, or backend. Keep it usable by opening `index.html` directly, and preserve GitHub Pages compatibility.
+- The app has no build step, runtime dependencies, server, or backend. `package.json` contains development-only tools for linting, validation, and browser smoke tests. Keep the app usable by opening `index.html` directly, and preserve GitHub Pages compatibility.
 - `README.md` is the user-facing source for setup, behavior, limitations, and keyboard shortcuts. Update it when user-visible behavior or setup changes.
 
 ## Implementation conventions

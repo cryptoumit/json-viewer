@@ -1,0 +1,17 @@
+{
+  "name": "json-api-viewer",
+  "private": true,
+  "scripts": {
+    "lint": "eslint js tests playwright.config.js",
+    "check:js": "node --check js/app.js",
+    "check:html": "html-validate index.html",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.0",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "html-validate": "11.21.1"
+  }
+}

@@ -1,11 +1,26 @@
 # JSON & API Viewer
-A lightweight, browser-based JSON and API viewer. Explore, format, and validate JSON; send API requests and inspect responses; and convert Unix timestamps. Built with vanilla HTML, CSS, and JavaScript, with no dependencies or backend.
+A lightweight, browser-based JSON and API viewer. Explore, format, and validate JSON; send API requests and inspect responses; and convert Unix timestamps. Built with vanilla HTML, CSS, and JavaScript, with no runtime dependencies or backend.
 
 **Try it online:** [cryptoumit.github.io/json-viewer](https://cryptoumit.github.io/json-viewer/) or install locally
 
 ## Local Installation
 
 Download the project as a ZIP from [GitHub](https://github.com/cryptoumit/json-viewer) and extract it. Open `index.html` in your browser to start using JSON & API Viewer.
+
+## Development checks
+
+The CI workflow checks JavaScript syntax, validates the HTML, and runs browser smoke tests. To run the checks locally, install the development tools and Chromium, then run:
+
+```sh
+npm install
+npx playwright install chromium
+npm run lint
+npm run check:js
+npm run check:html
+npm run test:browser
+```
+
+The browser tests use Python 3 to serve the static app locally.
 
 ## API Viewer
 
