@@ -54,13 +54,17 @@
     themeToggle.setAttribute("aria-pressed", String(isLight));
     themeToggle.title = `Switch to ${isLight ? "dark" : "light"} mode`;
     $('meta[name="theme-color"]').content = isLight ? "#f3f5fa" : "#0b1020";
-    try { localStorage.setItem("json-viewer-theme", selectedTheme); } catch {}
+    try { localStorage.setItem("json-viewer-theme", selectedTheme); } catch {
+      // Theme persistence is optional when browser storage is unavailable.
+    }
   }
   function loadTheme() {
     try {
       const savedTheme = localStorage.getItem("json-viewer-theme");
       if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
-    } catch {}
+    } catch {
+      // Fall back to the default theme when browser storage is unavailable.
+    }
   }
   function typeOf(v) { return v===null?"null":Array.isArray(v)?"array":typeof v; }
 
